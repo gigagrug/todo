@@ -20,12 +20,3 @@ func openDB() error {
 func closeDB() error {
 	return DB.Close()
 }
-
-func TodoPost() error {
-	insertTodo:= "INSERT INTO Todo(todo, done) VALUES(?, ?)"
-	_, err := DB.Exec(insertTodo, "todo1", false)
-	if err != nil {
-		return err
-	}
-	return nil
-}
