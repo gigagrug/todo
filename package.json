@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "npx tailwindcss -i ./static/main.css -o ./static/build.css --minify && air"
+    "tw": "npx tailwindcss -i ./static/main.css -o ./static/build.css --minify --watch"
   },
   "dependencies": {
     "@prisma/client": "^5.6.0"
