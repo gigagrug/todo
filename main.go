@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -14,8 +13,8 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	mux.HandleFunc("/", TodoGet)
 	mux.HandleFunc("/postTodo", TodoPost)
-	mux.HandleFunc("/updateTodo", TodoUpdate)
-	mux.HandleFunc("/deleteTodo", TodoDelete)
+	mux.HandleFunc("/updateTodo/", TodoUpdate)
+	mux.HandleFunc("/deleteTodo/", TodoDelete)
 
 	err := http.ListenAndServe(":8000", mux)
 	if err != nil {
@@ -85,8 +84,8 @@ func TodoPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error inserting todo", http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Fprintf(w, "Todo added successfully!")
+	tmpl := template.Must(template.ParseFiles("index.html"))
+	tmpl.ExecuteTemplate(w, "todos", Todo{Todo: todo, Done: done})
 }
 
 func TodoUpdate(w http.ResponseWriter, r *http.Request) {
@@ -101,18 +100,18 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todoID := r.FormValue("todoID")
+	id := r.URL.Path[len("/updateTodo/"):]
 	todo := r.FormValue("todo")
 	done := r.FormValue("done") == "on" // Checkbox value will be "on" if checked
 
 	updateTodo := "UPDATE Todo SET todo = ?, done = ? WHERE id = ?"
-	_, err = DB.Exec(updateTodo, todo, done, todoID)
+	_, err = DB.Exec(updateTodo, todo, done, id)
 	if err != nil {
 		http.Error(w, "Error updating todo", http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Fprintf(w, "Todo updated successfully!")
+	tmpl := template.Must(template.ParseFiles("index.html"))
+	tmpl.ExecuteTemplate(w, "todos", Todo{Todo: todo, Done: done})
 }
 
 func TodoDelete(w http.ResponseWriter, r *http.Request) {
@@ -127,14 +126,14 @@ func TodoDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todoID := r.FormValue("todoID") // Assuming todoID is passed as a hidden field in the form
+	id := r.URL.Path[len("/deleteTodo/"):]
 
 	deleteTodo := "DELETE FROM Todo WHERE id = ?"
-	_, err = DB.Exec(deleteTodo, todoID)
+	_, err = DB.Exec(deleteTodo, id)
 	if err != nil {
 		http.Error(w, "Error deleting todo", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprintf(w, "Todo deleted successfully!")
+	w.WriteHeader(http.StatusOK)
 }
