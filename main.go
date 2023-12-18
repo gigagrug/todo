@@ -35,8 +35,7 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT * FROM "Todo"`
-	rows, err := DB.Query(query)
+	rows, err := DB.Query(`SELECT * FROM "Todo"`)
 	if err != nil {
 		http.Error(w, "Error querying todos", http.StatusInternalServerError)
 		return
@@ -78,8 +77,7 @@ func TodoPost(w http.ResponseWriter, r *http.Request) {
 	todo := r.FormValue("todo")
 	done := r.FormValue("done") == "on"
 
-	insertTodo := `INSERT INTO "Todo" (todo, done) VALUES ($1, $2)`
-	_, err := DB.Exec(insertTodo, todo, done)
+	_, err := DB.Exec(`INSERT INTO "Todo" (todo, done) VALUES ($1, $2)`, todo, done)
 	if err != nil {
 		http.Error(w, "Error inserting todo", http.StatusInternalServerError)
 		return
@@ -104,8 +102,7 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 	todo := r.FormValue("todo")
 	done := r.FormValue("done") == "on" // Checkbox value will be "on" if checked
 
-	updateTodo := `UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`
-	_, err = DB.Exec(updateTodo, todo, done, id)
+	_, err = DB.Exec(`UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo, done, id)
 	if err != nil {
 		http.Error(w, "Error updating todo", http.StatusInternalServerError)
 		return
@@ -128,8 +125,7 @@ func TodoDelete(w http.ResponseWriter, r *http.Request) {
 
 	id := r.URL.Path[len("/deleteTodo/"):]
 
-	deleteTodo := `DELETE FROM "Todo" WHERE id = $1`
-	_, err = DB.Exec(deleteTodo, id)
+	_, err = DB.Exec(`DELETE FROM "Todo" WHERE id = $1`, id)
 	if err != nil {
 		http.Error(w, "Error deleting todo", http.StatusInternalServerError)
 		return

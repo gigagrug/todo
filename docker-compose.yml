@@ -1,6 +1,11 @@
 version: '3.8'
 
 services:
+  web:
+    build: .
+    ports:
+      - 8000:8000
+    command: air
   db:
     container_name: postgres
     image: postgres:16.1-alpine
