@@ -2,9 +2,9 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    image: ghcr.io/develang/todo:latest
     ports:
-      - 8000:8000
+      - 80:8000
   db:
     container_name: postgres
     image: postgres:16.1-alpine

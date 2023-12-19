@@ -37,7 +37,7 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := DB.Query(`SELECT * FROM "Todo"`)
 	if err != nil {
-		http.Error(w, "Error querying todos", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
