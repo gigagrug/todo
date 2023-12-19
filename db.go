@@ -3,13 +3,13 @@ package main
 import (
 	"database/sql"
 
-	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
 
 func openDB() error {
-	db, err := sql.Open("postgres", "postgresql://postgres:postgres@443:443/postgres?sslmode=disable")
+	db, err := sql.Open("sqlite3", "./prisma/dev.db")
 	if err != nil {
 		return err
 	}
