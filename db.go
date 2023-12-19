@@ -9,7 +9,7 @@ import (
 var DB *sql.DB
 
 func openDB() error {
-	db, err := sql.Open("postgres", "postgresql://postgres:postgres@443:5432/postgres?sslmode=disable")
+	db, err := sql.Open("postgres", "postgresql://postgres:postgres@443:443/postgres?sslmode=disable")
 	if err != nil {
 		return err
 	}
