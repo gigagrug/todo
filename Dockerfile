@@ -3,8 +3,6 @@ FROM golang:1.21.5-alpine
 ENV CGO_ENABLE=1
 
 RUN apk add --no-cache \
-	gcc \
-	musl-dev \
 	nodejs \
 	npm
 
@@ -16,6 +14,4 @@ COPY . .
 
 RUN go mod tidy
 
-RUN npx prisma migrate dev --name init 
-
-CMD ["air"]
+CMD ["sh", "-c", "npx prisma migrate dev --name init && air"]
