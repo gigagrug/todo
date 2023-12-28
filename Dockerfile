@@ -14,4 +14,6 @@ COPY . .
 
 RUN go mod tidy
 
+RUN npm install
+
 CMD ["sh", "-c", "npx prisma migrate dev --name init && air"]
