@@ -1,19 +1,25 @@
-FROM golang:1.21.5-alpine
-
-ENV CGO_ENABLE=1
-
-RUN apk add --no-cache \
-	nodejs \
-	npm
+FROM golang:1.21.5-alpine3.19 as builder
 
 WORKDIR /app
 
-RUN go install github.com/cosmtrek/air@latest
-
 COPY . .
 
-RUN go mod tidy
+RUN go mod download
 
-RUN npm install
+RUN go build -o main .
 
-CMD ["sh", "-c", "npx prisma migrate dev --name init && air"]
+RUN apk add --no-cache nodejs npm
+
+RUN npm i
+
+RUN npm run tw
+
+FROM scratch 
+
+WORKDIR /app/
+
+COPY --from=builder /app/main .
+
+COPY --from=builder /app/src/ ./src/
+
+CMD ["./main"]

@@ -1,16 +1,37 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
+
+	_ "github.com/lib/pq"
 )
+
+var DB *sql.DB
+
+const path = "./index.html"
+
+func openDB() error {
+	db, err := sql.Open("postgres", os.Getenv("PRISMA_DB"))
+	if err != nil {
+		return err
+	}
+	DB = db
+	return nil
+}
+
+func closeDB() error {
+	return DB.Close()
+}
 
 func main() {
 	openDB()
 	defer closeDB()
 	mux := http.NewServeMux()
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./src/assets/"))))
 	mux.HandleFunc("/", TodoGet)
 	mux.HandleFunc("/postTodo", TodoPost)
 	mux.HandleFunc("/updateTodo/", TodoUpdate)
@@ -57,7 +78,7 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl := template.Must(template.ParseFiles("index.html"))
+	tmpl := template.Must(template.ParseFiles("./src/index.html"))
 	data := map[string][]Todo{
 		"Todos": todos,
 	}
@@ -82,7 +103,7 @@ func TodoPost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error inserting todo", http.StatusInternalServerError)
 		return
 	}
-	tmpl := template.Must(template.ParseFiles("index.html"))
+	tmpl := template.Must(template.ParseFiles("./src/index.html"))
 	tmpl.ExecuteTemplate(w, "todos", Todo{Todo: todo, Done: done})
 }
 
@@ -107,7 +128,7 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error updating todo", http.StatusInternalServerError)
 		return
 	}
-	tmpl := template.Must(template.ParseFiles("index.html"))
+	tmpl := template.Must(template.ParseFiles("./src/index.html"))
 	tmpl.ExecuteTemplate(w, "todos", Todo{Todo: todo, Done: done})
 }
 
