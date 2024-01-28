@@ -18,7 +18,11 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build and push the image
         run: |
-          echo ${{ github.repository }}
+          docker login --username ${{ github.actor }} --password ${{ secrets.GHP_BLOG }} ghcr.io
+          docker build . --tag ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:latest
+          docker build . --tag ghcr.io/${{ github.repository }}:${{ inputs.version }}
+          docker push ghcr.io/${{ github.repository }}:${{ inputs.version }}
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
