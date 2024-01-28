@@ -21,6 +21,8 @@ jobs:
           docker login --username ${{ github.actor }} --password ${{ secrets.GHP_TODO }} ghcr.io
           docker build . --tag ghcr.io/${{ github.actor }}/todo:latest
           docker push ghcr.io/${{ github.actor }}/todo:latest
+          docker build . --tag ghcr.io/${{ github.actor }}/todo:${{ inputs.version }}
+          docker push ghcr.io/${{ github.actor }}/todo:${{ inputs.version }}
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
