@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build and push the image
         run: |
-          docker login --username ${{ github.actor }} --password ${{ secrets.GHP_BLOG }} ghcr.io
+          docker login --username ${{ github.actor }} --password ${{ secrets.GHP_TODO }} ghcr.io
           docker build . --tag ghcr.io/${{ github.repository }}:latest
           docker push ghcr.io/${{ github.repository }}:latest
           docker build . --tag ghcr.io/${{ github.repository }}:${{ inputs.version }}
