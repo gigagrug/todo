@@ -19,10 +19,10 @@ jobs:
       - name: Build and push the image
         run: |
           docker login --username ${{ github.actor }} --password ${{ secrets.GHP_TODO }} ghcr.io
-          docker build . --tag ghcr.io/${{ github.actor }}/todo:latest
-          docker push ghcr.io/${{ github.actor }}/todo:latest
-          docker build . --tag ghcr.io/${{ github.actor }}/todo:${{ inputs.version }}
-          docker push ghcr.io/${{ github.actor }}/todo:${{ inputs.version }}
+          docker build . --tag ghcr.io/${{ github.actor }}/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.actor }}/${{ github.repository }}:latest
+          docker build . --tag ghcr.io/${{ github.actor }}/${{ github.repository }}:${{ inputs.version }}
+          docker push ghcr.io/${{ github.actor }}/${{ github.repository }}:${{ inputs.version }}
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
