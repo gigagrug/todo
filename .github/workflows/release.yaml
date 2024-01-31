@@ -7,7 +7,7 @@ on:
         type: string
         description: Version
         required: true
-        
+
 permissions:
   contents: write
 
