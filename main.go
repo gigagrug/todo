@@ -29,7 +29,7 @@ func closeDB() error {
 
 func main() {
 	if os.Getenv("PROD") != "true" {
-		fmt.Println("dev")
+		fmt.Println("devedit")
 		path = "./src"
 	} else {
 		fmt.Println("prod")
