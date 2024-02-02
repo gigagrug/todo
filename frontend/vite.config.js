@@ -13,5 +13,8 @@ export default defineConfig({
         index: resolve(root, "index.html")
       }
     }
+  },
+  server: {
+    host: true
   }
 })
