@@ -14,11 +14,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: github.ref == "refs/heads/main"
     steps:
       - uses: actions/checkout@v3
       - name: Build and push the image
         run: |
-          echo ${{ github.ref }}
           docker login --username ${{ github.actor }} --password ${{ secrets.GHP_TODO }} ghcr.io
           docker build . --tag ghcr.io/${{ github.repository }}:latest
           docker push ghcr.io/${{ github.repository }}:latest
