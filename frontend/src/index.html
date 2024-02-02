@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="./assets/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="m-2">
+      <label for="darkModeToggle" class="flex items-center cursor-pointer">
+        <input type="checkbox" id="darkModeToggle" />
+        <p class="ms-1">Dark Mode</p>
+      </label>
+    </div>
+    <div class="max-w-lg mx-auto">
+      <h1 class="text-center my-3">Todo App</h1>
+
+      <form id="postForm" onsubmit="createTodo()">
+        <div class="c-border rounded-xl mb-4">
+          <div class="flex items-center">
+            <input class="rounded-l-lg" type="text" id="todo" />
+            <button class="p-2.5 text-sm font-medium h-full text-white bg-blue-600 rounded-e-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Submit</button>
+          </div>
+        </div>
+      </form>
+
+      <div id="todosContainer" class="space-y-4"></div>
+    </div>
+
+    <script type="module" src="/assets/darkMode.js"></script>
+    <script>
+      function getTodos() {
+        fetch("http://localhost:8000/getTodos/")
+          .then((response) => response.json())
+          .then((data) => {
+            console.table(data)
+            const todosContainer = document.getElementById("todosContainer")
+            if (data && todosContainer) {
+              todosContainer.innerHTML = data
+                .map(
+                  (todo) => `
+          					<div class="c-border rounded-xl dark:bg-gray-700">
+            					<form onsubmit="updateTodo(${todo.id})">
+												<div class="flex items-center">
+													<input class="ms-2" type="checkbox" id="done${todo.id}" ${todo.done ? "checked" : ""} onclick="updateTodo(${todo.id})" />
+                					<input class="rounded-l-lg" type="text" id="todo${todo.id}" value="${todo.todo}" />
+													<button class="p-2.5 text-sm font-medium h-full text-white bg-blue-600 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Update</button>
+                					<button class="p-2.5 text-sm font-medium h-full text-white bg-red-600 rounded-e-lg border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:hover:bg-red-700 dark:focus:ring-red-800" type="button" onclick="deleteTodo(${todo.id})">Delete</button>
+												</div>
+            					</form>
+          					</div>
+									`
+                )
+                .join("")
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error)
+            setTimeout(getTodos, 400)
+          })
+      }
+      getTodos()
+
+      async function createTodo() {
+        event.preventDefault()
+        var todo = document.getElementById("todo").value
+        try {
+          const response = await fetch("http://localhost:8000/createTodo/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              todo: todo
+            })
+          })
+          if (response.ok) {
+            console.log("Todo post created successfully!", todo)
+            document.getElementById("postForm").reset()
+            getTodos()
+          } else {
+            console.error("Todo post creation failed.")
+          }
+        } catch (error) {
+          console.error("Error:", error)
+        }
+      }
+
+      async function updateTodo(todoId) {
+        event.preventDefault()
+        var todo = document.getElementById(`todo${todoId}`).value
+        var done = document.getElementById(`done${todoId}`).checked
+        try {
+          const response = await fetch(`http://localhost:8000/updateTodo/${todoId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              todo: todo,
+              done: done
+            })
+          })
+          if (response.ok) {
+            console.log("Todo update successfully!", todo)
+            getTodos()
+          } else {
+            console.error("Todo update failed.")
+          }
+        } catch (error) {
+          console.error("Error:", error)
+        }
+      }
+
+      async function deleteTodo(todoId) {
+        try {
+          const response = await fetch(`http://localhost:8000/deleteTodo/${todoId}`, {
+            method: "DELETE"
+          })
+          if (response.ok) {
+            console.log(`Todo post with ID ${todoId} deleted successfully!`)
+            getTodos()
+          } else {
+            console.error(`Failed to delete todo post with ID ${todoId}.`)
+          }
+        } catch (error) {
+          console.error("Error:", error)
+        }
+      }
+    </script>
+  </body>
+</html>

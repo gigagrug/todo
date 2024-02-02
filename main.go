@@ -2,8 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
-	"html/template"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -28,34 +27,36 @@ func closeDB() error {
 }
 
 func main() {
-	if os.Getenv("PROD") != "true" {
-		fmt.Println("deasdv")
-		path = "./src"
-	} else {
-		fmt.Println("prod")
-		path = "./bin/dist"
-	}
-
 	openDB()
 	defer closeDB()
+
 	mux := http.NewServeMux()
-	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(path+"/assets/"))))
-	mux.HandleFunc("/", TodoGet)
-	mux.HandleFunc("/postTodo", TodoPost)
+	mux.HandleFunc("/getTodos/", TodoGet)
+	mux.HandleFunc("/createTodo/", TodoPost)
 	mux.HandleFunc("/updateTodo/", TodoUpdate)
 	mux.HandleFunc("/deleteTodo/", TodoDelete)
 
-	err := http.ListenAndServe(":8000", mux)
+	err := http.ListenAndServe(":8000", addCORS(mux))
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+func addCORS(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		h.ServeHTTP(w, r)
+	})
+}
+
 type Todo struct {
-	ID        int
-	Todo      string
-	Done      bool
-	CreatedAt string
+	ID        int    `json:"id"`
+	Todo      string `json:"todo"`
+	Done      bool   `json:"done"`
+	CreatedAt string `json:"createdAt"`
 }
 
 func TodoGet(w http.ResponseWriter, r *http.Request) {
@@ -64,14 +65,14 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := DB.Query(`SELECT * FROM "Todo"`)
+	rows, err := DB.Query(`SELECT * FROM "Todo" ORDER BY id ASC`)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
-	var todos []Todo
+	todos := []Todo{}
 	for rows.Next() {
 		var todo Todo
 		if err := rows.Scan(&todo.ID, &todo.Todo, &todo.Done, &todo.CreatedAt); err != nil {
@@ -86,79 +87,72 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl := template.Must(template.ParseFiles(path + "/index.html"))
-	data := map[string][]Todo{
-		"Todos": todos,
-	}
-
-	if err := tmpl.Execute(w, data); err != nil {
-		http.Error(w, "Error rendering template", http.StatusInternalServerError)
+	jsonData, err := json.Marshal(todos)
+	if err != nil {
+		http.Error(w, "Unable to marshal JSON", http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write(jsonData)
 }
 
 func TodoPost(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	todo := r.FormValue("todo")
-	done := r.FormValue("done") == "on"
+	var todo Todo
+	json.NewDecoder(r.Body).Decode(&todo)
 
-	_, err := DB.Exec(`INSERT INTO "Todo" (todo, done) VALUES ($1, $2)`, todo, done)
+	_, err := DB.Exec(`INSERT INTO "Todo" (todo, done) VALUES ($1, $2)`, todo.Todo, todo.Done)
 	if err != nil {
 		http.Error(w, "Error inserting todo", http.StatusInternalServerError)
 		return
 	}
-	tmpl := template.Must(template.ParseFiles(path + "/index.html"))
-	tmpl.ExecuteTemplate(w, "todos", Todo{Todo: todo, Done: done})
 }
 
 func TodoUpdate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	if r.Method != http.MethodPut {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Error parsing form", http.StatusInternalServerError)
-		return
-	}
-
+	var todo Todo
+	json.NewDecoder(r.Body).Decode(&todo)
 	id := r.URL.Path[len("/updateTodo/"):]
-	todo := r.FormValue("todo")
-	done := r.FormValue("done") == "on" // Checkbox value will be "on" if checked
 
-	_, err = DB.Exec(`UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo, done, id)
+	_, err := DB.Exec(`UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo.Todo, todo.Done, id)
 	if err != nil {
 		http.Error(w, "Error updating todo", http.StatusInternalServerError)
 		return
 	}
-	tmpl := template.Must(template.ParseFiles(path + "/index.html"))
-	tmpl.ExecuteTemplate(w, "todos", Todo{Todo: todo, Done: done})
 }
 
 func TodoDelete(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Error parsing form", http.StatusInternalServerError)
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	id := r.URL.Path[len("/deleteTodo/"):]
 
-	_, err = DB.Exec(`DELETE FROM "Todo" WHERE id = $1`, id)
+	_, err := DB.Exec(`DELETE FROM "Todo" WHERE id = $1`, id)
 	if err != nil {
 		http.Error(w, "Error deleting todo", http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
