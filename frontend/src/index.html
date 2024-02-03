@@ -30,8 +30,9 @@
 
     <script type="module" src="/assets/darkMode.js"></script>
     <script>
+      const url = "http://localhost:8000"
       function getTodos() {
-        fetch("http://localhost:8000/getTodos/")
+        fetch(url + "/getTodos/")
           .then((response) => response.json())
           .then((data) => {
             console.table(data)
@@ -66,7 +67,7 @@
         event.preventDefault()
         var todo = document.getElementById("todo").value
         try {
-          const response = await fetch("http://localhost:8000/createTodo/", {
+          const response = await fetch(url + "/createTodo/", {
             method: "POST",
             headers: {
               "Content-Type": "application/json"
@@ -92,7 +93,7 @@
         var todo = document.getElementById(`todo${todoId}`).value
         var done = document.getElementById(`done${todoId}`).checked
         try {
-          const response = await fetch(`http://localhost:8000/updateTodo/${todoId}`, {
+          const response = await fetch(url + `/updateTodo/${todoId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json"
@@ -115,7 +116,7 @@
 
       async function deleteTodo(todoId) {
         try {
-          const response = await fetch(`http://localhost:8000/deleteTodo/${todoId}`, {
+          const response = await fetch(url + `/deleteTodo/${todoId}`, {
             method: "DELETE"
           })
           if (response.ok) {
