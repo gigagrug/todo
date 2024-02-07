@@ -31,10 +31,10 @@ func main() {
 	defer closeDB()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/getTodos/", TodoGet)
-	mux.HandleFunc("/createTodo/", TodoPost)
-	mux.HandleFunc("/updateTodo/", TodoUpdate)
-	mux.HandleFunc("/deleteTodo/", TodoDelete)
+	mux.HandleFunc("GET /getTodos/{$}", TodoGet)
+	mux.HandleFunc("POST /createTodo/{$}", TodoPost)
+	mux.HandleFunc("PUT /updateTodo/{todoId}/{$}", TodoUpdate)
+	mux.HandleFunc("DELETE /deleteTodo/{todoId}/{$}", TodoDelete)
 
 	err := http.ListenAndServe(":8000", addCORS(mux))
 	if err != nil {
@@ -47,7 +47,9 @@ func addCORS(h http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
+		if r.Method == "OPTIONS" {
+			return
+		}
 		h.ServeHTTP(w, r)
 	})
 }
@@ -60,11 +62,6 @@ type Todo struct {
 }
 
 func TodoGet(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	rows, err := DB.Query(`SELECT * FROM "Todo" ORDER BY id ASC`)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -98,15 +95,6 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func TodoPost(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(http.StatusOK)
-	}
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var todo Todo
 	json.NewDecoder(r.Body).Decode(&todo)
 
@@ -118,18 +106,10 @@ func TodoPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func TodoUpdate(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(http.StatusOK)
-	}
-
-	if r.Method != http.MethodPut {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var todo Todo
 	json.NewDecoder(r.Body).Decode(&todo)
-	id := r.URL.Path[len("/updateTodo/"):]
+
+	id := r.PathValue("todoId")
 
 	_, err := DB.Exec(`UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo.Todo, todo.Done, id)
 	if err != nil {
@@ -139,16 +119,7 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func TodoDelete(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(http.StatusOK)
-	}
-
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	id := r.URL.Path[len("/deleteTodo/"):]
+	id := r.PathValue("todoId")
 
 	_, err := DB.Exec(`DELETE FROM "Todo" WHERE id = $1`, id)
 	if err != nil {

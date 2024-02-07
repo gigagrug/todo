@@ -93,7 +93,7 @@
         var todo = document.getElementById(`todo${todoId}`).value
         var done = document.getElementById(`done${todoId}`).checked
         try {
-          const response = await fetch(url + `/updateTodo/${todoId}`, {
+          const response = await fetch(url + `/updateTodo/${todoId}/`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json"
@@ -116,7 +116,7 @@
 
       async function deleteTodo(todoId) {
         try {
-          const response = await fetch(url + `/deleteTodo/${todoId}`, {
+          const response = await fetch(url + `/deleteTodo/${todoId}/`, {
             method: "DELETE"
           })
           if (response.ok) {
