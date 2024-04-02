@@ -16,14 +16,25 @@
     "autoprefixer": "^10.4.18",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
+    "prettier-plugin-organize-attributes": "^1.0.0",
+    "prettier-plugin-tailwindcss": "^0.5.12",
     "prisma": "^5.10.2",
     "tailwindcss": "^3.4.1",
     "vite": "^5.1.5"
   },
   "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss",
+      "prettier-plugin-organize-attributes"
+    ],
+    "attributeGroups": [
+      "^(onclick|onsubmit)$",
+      "^(id)$",
+      "^class$",
+      "$DEFAULT",
+      "^aria-"
+    ],
     "semi": false,
-    "tabWidth": 2,
-    "trailingComma": "none",
     "printWidth": 1000
   }
 }

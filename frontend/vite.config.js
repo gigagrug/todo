@@ -10,11 +10,11 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        index: resolve(root, "index.html")
-      }
-    }
+        index: resolve(root, "index.html"),
+      },
+    },
   },
   server: {
-    host: true
-  }
+    host: true,
+  },
 })

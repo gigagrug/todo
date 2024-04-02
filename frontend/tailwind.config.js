@@ -2,8 +2,8 @@
 export default {
   content: ["./src/**/*.{js,html}"],
   theme: {
-    extend: {}
+    extend: {},
   },
   plugins: [],
-  darkMode: "class"
+  darkMode: "class",
 }

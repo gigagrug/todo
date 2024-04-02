@@ -2,7 +2,6 @@ FROM golang:1.22.1-alpine3.19 as dev
 WORKDIR /app
 COPY . .
 RUN go mod download
-ENV PROD=false
 CMD ["go", "run", "main.go"]
 
 # Prod

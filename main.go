@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -14,7 +15,7 @@ var DB *sql.DB
 var path string
 
 func openDB() error {
-	db, err := sql.Open("postgres", os.Getenv("PRISMA_DB"))
+	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
 	if err != nil {
 		return err
 	}
@@ -64,6 +65,7 @@ type Todo struct {
 func TodoGet(w http.ResponseWriter, r *http.Request) {
 	rows, err := DB.Query(`SELECT * FROM "Todo" ORDER BY id ASC`)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -73,12 +75,12 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var todo Todo
 		if err := rows.Scan(&todo.ID, &todo.Todo, &todo.Done, &todo.CreatedAt); err != nil {
+			slog.Error(err.Error())
 			http.Error(w, "Error scanning todos", http.StatusInternalServerError)
 			return
 		}
 		todos = append(todos, todo)
 	}
-
 	if err := rows.Err(); err != nil {
 		http.Error(w, "Error iterating through todos", http.StatusInternalServerError)
 		return
@@ -86,6 +88,7 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 
 	jsonData, err := json.Marshal(todos)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, "Unable to marshal JSON", http.StatusInternalServerError)
 		return
 	}
@@ -100,6 +103,7 @@ func TodoPost(w http.ResponseWriter, r *http.Request) {
 
 	_, err := DB.Exec(`INSERT INTO "Todo" (todo, done) VALUES ($1, $2)`, todo.Todo, todo.Done)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, "Error inserting todo", http.StatusInternalServerError)
 		return
 	}
@@ -113,6 +117,7 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 
 	_, err := DB.Exec(`UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo.Todo, todo.Done, id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, "Error updating todo", http.StatusInternalServerError)
 		return
 	}
@@ -123,6 +128,7 @@ func TodoDelete(w http.ResponseWriter, r *http.Request) {
 
 	_, err := DB.Exec(`DELETE FROM "Todo" WHERE id = $1`, id)
 	if err != nil {
+		slog.Error(err.Error())
 		http.Error(w, "Error deleting todo", http.StatusInternalServerError)
 		return
 	}

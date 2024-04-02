@@ -3,32 +3,32 @@
 @tailwind utilities;
 
 @layer components {
-  .c-text {
-    @apply text-gray-800 dark:text-gray-200;
-  }
   .c-border {
-    @apply border border-gray-300 dark:border-gray-600;
+    @apply border border-neutral-200 dark:border-neutral-700;
   }
 }
 
 @layer base {
+  html.dark {
+    @apply bg-neutral-900;
+  }
+  body {
+    @apply text-neutral-800 dark:text-neutral-200;
+  }
   h1 {
-    @apply text-4xl font-bold c-text;
+    @apply text-4xl font-bold;
   }
   h2 {
-    @apply text-3xl font-bold c-text;
+    @apply text-3xl font-bold;
   }
   h3 {
-    @apply text-2xl font-bold c-text;
-  }
-  p {
-    @apply c-text;
+    @apply text-2xl font-bold;
   }
   label {
-    @apply mb-1 text-sm font-medium c-text;
+    @apply mb-1 text-sm font-medium;
   }
   textarea,
   input[type="text"] {
-    @apply c-text focus:outline-none w-full p-2 dark:bg-gray-700/40;
+    @apply w-full bg-neutral-50 p-2 placeholder:text-sm focus:outline-none dark:bg-neutral-700;
   }
 }

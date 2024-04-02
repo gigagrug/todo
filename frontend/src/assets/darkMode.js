@@ -1,31 +1,20 @@
-const toggleSwitch = document.querySelector("#darkModeToggle")
 const isDarkMode = localStorage.getItem("darkMode")
-
+const htmlTag = document.documentElement
+const toggleSwitch = document.querySelector("#darkModeToggle")
 if (isDarkMode === "true") {
-  enableDarkMode()
+  htmlTag.classList.add("dark")
   if (toggleSwitch) {
     toggleSwitch.checked = true
   }
 }
-
 if (toggleSwitch) {
   toggleSwitch.addEventListener("change", function () {
     if (this.checked) {
-      enableDarkMode()
+      htmlTag.classList.add("dark")
       localStorage.setItem("darkMode", "true")
     } else {
-      disableDarkMode()
+      htmlTag.classList.remove("dark")
       localStorage.setItem("darkMode", "false")
     }
   })
-}
-
-function enableDarkMode() {
-  document.body.classList.add("dark")
-  document.body.style.backgroundColor = "#121212"
-}
-
-function disableDarkMode() {
-  document.body.classList.remove("dark")
-  document.body.style.backgroundColor = "#ffffff"
 }
