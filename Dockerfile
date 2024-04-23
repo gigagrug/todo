@@ -1,11 +1,11 @@
-FROM golang:1.22.1-alpine3.19 as dev
+FROM golang:alpine as dev
 WORKDIR /app
 COPY . .
 RUN go mod download
 CMD ["go", "run", "main.go"]
 
 # Prod
-FROM --platform=$BUILDPLATFORM golang:1.22.1-alpine3.19 AS build
+FROM --platform=$BUILDPLATFORM golang:alpine AS build
 WORKDIR /src
 COPY . .
 RUN go mod download -x
