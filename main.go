@@ -8,28 +8,18 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
-var path string
-
-func openDB() error {
-	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
-	if err != nil {
-		return err
-	}
-	DB = db
-	return nil
-}
-
-func closeDB() error {
-	return DB.Close()
-}
 
 func main() {
-	openDB()
-	defer closeDB()
+	db, err := sql.Open("sqlite3", os.Getenv("DB_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	DB = db
+	defer DB.Close()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /getTodos/{$}", TodoGet)
@@ -37,8 +27,7 @@ func main() {
 	mux.HandleFunc("PUT /updateTodo/{todoId}/{$}", TodoUpdate)
 	mux.HandleFunc("DELETE /deleteTodo/{todoId}/{$}", TodoDelete)
 
-	err := http.ListenAndServe(":8000", addCORS(mux))
-	if err != nil {
+	if err := http.ListenAndServe(":8000", addCORS(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
