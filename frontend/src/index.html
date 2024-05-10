@@ -42,18 +42,18 @@
           if (data && todosContainer) {
             todosContainer.innerHTML = data
               .map(
-                (todo) => `
-									<div class="c-border rounded-xl dark:bg-neutral-700">
-										<form onsubmit="updateTodo(${todo.id})">
-											<div class="flex items-center">
-												<input class="ms-2" type="checkbox" id="done${todo.id}" ${todo.done ? "checked" : ""} onclick="updateTodo(${todo.id})" />
-												<input class="rounded-l-lg" type="text" id="todo${todo.id}" value="${todo.todo}" />
-												<button class="p-2.5 text-sm font-medium h-full text-white bg-blue-600 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Update</button>
-												<button class="p-2.5 text-sm font-medium h-full text-white bg-red-600 rounded-e-lg border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:hover:bg-red-700 dark:focus:ring-red-800" type="button" onclick="deleteTodo(${todo.id})">Delete</button>
-											</div>
-										</form>
-									</div>
-								`,
+                (todo) => /* HTML */ `
+                  <div class="c-border rounded-xl dark:bg-neutral-700">
+                    <form onsubmit="updateTodo(${todo.id})">
+                      <div class="flex items-center">
+                        <input onclick="updateTodo(${todo.id})" id="done${todo.id}" class="ms-2" type="checkbox" ${todo.done ? "checked" : ""} />
+                        <input id="todo${todo.id}" class="rounded-l-lg" type="text" value="${todo.todo}" />
+                        <button class="p-2.5 text-sm font-medium h-full text-white bg-blue-600 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Update</button>
+                        <button onclick="deleteTodo(${todo.id})" class="p-2.5 text-sm font-medium h-full text-white bg-red-600 rounded-e-lg border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:hover:bg-red-700 dark:focus:ring-red-800" type="button">Delete</button>
+                      </div>
+                    </form>
+                  </div>
+                `,
               )
               .join("")
           }
