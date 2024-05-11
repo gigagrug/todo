@@ -8,19 +8,19 @@
   </head>
   <body>
     <div class="m-2">
-      <label class="flex items-center cursor-pointer" for="darkModeToggle">
+      <label class="flex cursor-pointer items-center" for="darkModeToggle">
         <input id="darkModeToggle" type="checkbox" />
         <p class="ms-1">Dark Mode</p>
       </label>
     </div>
-    <div class="max-w-lg mx-auto">
-      <h1 class="text-center my-3">Todo App</h1>
+    <div class="mx-auto max-w-lg">
+      <h1 class="my-3 text-center">Todo App</h1>
 
       <form onsubmit="createTodo()" id="postForm">
-        <div class="c-border rounded-xl mb-4">
+        <div class="c-border mb-4 rounded-xl">
           <div class="flex items-center">
             <input id="todo" class="rounded-l-lg" type="text" />
-            <button class="p-2.5 text-sm font-medium h-full text-white bg-blue-600 rounded-e-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Submit</button>
+            <button class="h-full rounded-e-lg border border-blue-700 bg-blue-600 p-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Submit</button>
           </div>
         </div>
       </form>
@@ -48,8 +48,8 @@
                       <div class="flex items-center">
                         <input onclick="updateTodo(${todo.id})" id="done${todo.id}" class="ms-2" type="checkbox" ${todo.done ? "checked" : ""} />
                         <input id="todo${todo.id}" class="rounded-l-lg" type="text" value="${todo.todo}" />
-                        <button class="p-2.5 text-sm font-medium h-full text-white bg-blue-600 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Update</button>
-                        <button onclick="deleteTodo(${todo.id})" class="p-2.5 text-sm font-medium h-full text-white bg-red-600 rounded-e-lg border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:hover:bg-red-700 dark:focus:ring-red-800" type="button">Delete</button>
+                        <button class="h-full border border-blue-700 bg-blue-600 p-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="submit">Update</button>
+                        <button onclick="deleteTodo(${todo.id})" class="h-full rounded-e-lg border border-red-700 bg-red-600 p-2.5 text-sm font-medium text-white hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 dark:hover:bg-red-700 dark:focus:ring-red-800" type="button">Delete</button>
                       </div>
                     </form>
                   </div>

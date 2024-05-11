@@ -24,8 +24,8 @@
   },
   "prettier": {
     "plugins": [
-      "prettier-plugin-tailwindcss",
-      "prettier-plugin-organize-attributes"
+      "prettier-plugin-organize-attributes",
+      "prettier-plugin-tailwindcss"
     ],
     "attributeGroups": [
       "^(onclick|onsubmit)$",
