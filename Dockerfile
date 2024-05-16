@@ -3,5 +3,5 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 RUN apk add --update npm
-RUN cd /app/frontend && npm i
+RUN npm i
 CMD go run main.go
