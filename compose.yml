@@ -1,30 +1,26 @@
 services:
-  # frontend:
-  #   build: ./frontend/
-  #   ports:
-  #     - 5173:5173
-  #   develop:
-  #     watch:
-  #       - path: ./frontend/
-  #         target: /app
-  #         action: sync
+  frontend:
+    build: ./frontend/
+    ports:
+      - 5173:5173
+    develop:
+      watch:
+        - path: ./frontend/
+          target: /app
+          action: sync
   web:
     build:
-<<<<<<< HEAD
-        context: .
-        target: dev
+      context: .
+      target: final 
     ports:
       - 8000:8000
     environment:
-      DB_URL: "postgres://postgres:postgres@db:5432/postgres?sslmode=disable"
-    command: sh -c "npm run migrate && go run main.go"
-    depends_on:
-      - db
-    # develop:
-    #   watch:
-    #     - path: .
-    #       target: /app
-    #       action: sync+restart
+      DB_URL: "postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable"
+    develop:
+      watch:
+        - path: .
+          target: /app
+          action: sync+restart
   db:
     container_name: postgres 
     image: postgres:alpine
@@ -35,21 +31,7 @@ services:
       - POSTGRES_DB=postgres
     ports:
       - 5432:5432
-
-=======
-      context: .
-      target: dev 
-    ports:
-      - 8000:8000
-    environment:
-      DB_URL: "./frontend/prisma/dev.db"
     volumes:
-      - db-data:/app/frontend/prisma
-    develop:
-      watch:
-        - path: .
-          target: /app
-          action: sync+restart
+      - pgdata:/var/lib/postgresql/data
 volumes:
-  db-data:
->>>>>>> parent of 51f5b36 (postgres)
+  pgdata:
