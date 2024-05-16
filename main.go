@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
 
 func main() {
-	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
+	db, err := sql.Open("sqlite3", os.Getenv("DB_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}

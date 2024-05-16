@@ -10,6 +10,7 @@ services:
   #         action: sync
   web:
     build:
+<<<<<<< HEAD
         context: .
         target: dev
     ports:
@@ -35,3 +36,20 @@ services:
     ports:
       - 5432:5432
 
+=======
+      context: .
+      target: dev 
+    ports:
+      - 8000:8000
+    environment:
+      DB_URL: "./frontend/prisma/dev.db"
+    volumes:
+      - db-data:/app/frontend/prisma
+    develop:
+      watch:
+        - path: .
+          target: /app
+          action: sync+restart
+volumes:
+  db-data:
+>>>>>>> parent of 51f5b36 (postgres)
