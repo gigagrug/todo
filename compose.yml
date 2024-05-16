@@ -1,17 +1,17 @@
 services:
-  frontend:
-    build: ./frontend/
-    ports:
-      - 5173:5173
-    develop:
-      watch:
-        - path: ./frontend/
-          target: /app
-          action: sync
+  # frontend:
+  #   build: ./frontend/
+  #   ports:
+  #     - 5173:5173
+  #   develop:
+  #     watch:
+  #       - path: ./frontend/
+  #         target: /app
+  #         action: sync
   web:
     build:
-      context: .
-      target: dev
+        context: .
+        target: dev
     ports:
       - 8000:8000
     environment:
@@ -19,11 +19,11 @@ services:
     command: sh -c "cd frontend/ && npm run migrate && cd .. && go run main.go"
     depends_on:
       - db
-    develop:
-      watch:
-        - path: .
-          target: /app
-          action: sync+restart
+    # develop:
+    #   watch:
+    #     - path: .
+    #       target: /app
+    #       action: sync+restart
   db:
     container_name: postgres 
     image: postgres:alpine
