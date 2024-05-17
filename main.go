@@ -21,6 +21,19 @@ func main() {
 	DB = db
 	defer DB.Close()
 
+	_, err = db.Exec(`
+		CREATE TABLE IF NOT EXISTS "Todo" (
+			id SERIAL PRIMARY KEY,
+			todo TEXT,
+			done BOOLEAN DEFAULT FALSE,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+		`)
+	if err != nil {
+		slog.Info(err.Error())
+		panic(err)
+	}
+	slog.Info("Table created")
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /getTodos/{$}", TodoGet)
 	mux.HandleFunc("POST /createTodo/{$}", TodoPost)

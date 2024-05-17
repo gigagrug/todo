@@ -16,6 +16,9 @@ services:
       - 8000:8000
     environment:
       DB_URL: "postgres://postgres:postgres@db:5432/postgres?sslmode=disable"
+    restart: always
+    depends_on:
+      - db
     develop:
       watch:
         - path: .
