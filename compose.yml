@@ -2,7 +2,7 @@ services:
   web:
     build:
       context: .
-      target: final 
+      target: dev 
     ports:
       - 8000:8000
     environment:

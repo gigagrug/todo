@@ -7,7 +7,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "tw": "npx tailwindcss -i ./src/assets/style.css -o ./src/assets/output.css --minify --watch",
+    "tw": "npx tailwindcss -i ./assets/style.css -o ./assets/output.css --minify --watch",
     "migrate": "npx prisma migrate dev --skip-generate"
   },
   "devDependencies": {
