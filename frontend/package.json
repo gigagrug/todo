@@ -7,20 +7,16 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "tw": "npx tailwindcss -i ./src/assets/style.css -o ./src/assets/output.css --minify --watch",
     "migrate": "npx prisma migrate dev --skip-generate"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
+    "@tailwindcss/cli": "^4.0.0-alpha.15",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-attributes": "^1.0.0",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "prisma": "^5.14.0",
-    "tailwindcss": "^3.4.3",
-    "vite": "^5.2.11"
+    "tailwindcss": "^4.0.0-alpha.15"
   },
   "prettier": {
     "plugins": [
@@ -29,12 +25,13 @@
     ],
     "attributeGroups": [
       "^(onclick|onsubmit)$",
+      "^(name)$",
       "^(id)$",
+      "^hx-",
       "^class$",
       "$DEFAULT",
       "^aria-"
     ],
-    "semi": false,
     "printWidth": 1000
   }
 }

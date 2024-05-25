@@ -30,5 +30,6 @@ RUN adduser \
     appuser
 USER appuser
 COPY --from=build /bin/server /bin/
+COPY --from=build /src/frontend /frontend
 EXPOSE 8000
 ENTRYPOINT [ "/bin/server" ]

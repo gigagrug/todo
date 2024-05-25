@@ -2,11 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
+	"fmt"
+	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -35,36 +37,34 @@ func main() {
 	slog.Info("Table created")
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /getTodos/{$}", TodoGet)
+	mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./frontend/assets/"))))
+
+	mux.HandleFunc("GET /{$}", Home)
+
 	mux.HandleFunc("POST /createTodo/{$}", TodoPost)
 	mux.HandleFunc("PUT /updateTodo/{todoId}/{$}", TodoUpdate)
 	mux.HandleFunc("DELETE /deleteTodo/{todoId}/{$}", TodoDelete)
 
-	if err := http.ListenAndServe(":8000", addCORS(mux)); err != nil {
+	if err := http.ListenAndServe(":8000", middleware(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func addCORS(h http.Handler) http.Handler {
+func middleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		if r.Method == "OPTIONS" {
-			return
-		}
+		fmt.Println(r.Method, r.URL.Path)
 		h.ServeHTTP(w, r)
 	})
 }
 
 type Todo struct {
-	ID        int    `json:"id"`
-	Todo      string `json:"todo"`
-	Done      bool   `json:"done"`
-	CreatedAt string `json:"createdAt"`
+	ID        int
+	Todo      string
+	Done      bool
+	CreatedAt string
 }
 
-func TodoGet(w http.ResponseWriter, r *http.Request) {
+func Home(w http.ResponseWriter, r *http.Request) {
 	rows, err := DB.Query(`SELECT * FROM "Todo" ORDER BY id ASC`)
 	if err != nil {
 		slog.Error(err.Error())
@@ -78,44 +78,58 @@ func TodoGet(w http.ResponseWriter, r *http.Request) {
 		var todo Todo
 		if err := rows.Scan(&todo.ID, &todo.Todo, &todo.Done, &todo.CreatedAt); err != nil {
 			slog.Error(err.Error())
-			http.Error(w, "Error scanning todos", http.StatusInternalServerError)
+			http.Error(w, "Error getting todos", http.StatusInternalServerError)
 			return
 		}
 		todos = append(todos, todo)
 	}
 	if err := rows.Err(); err != nil {
-		http.Error(w, "Error iterating through todos", http.StatusInternalServerError)
+		slog.Error(err.Error())
+		http.Error(w, "Error getting todos", http.StatusInternalServerError)
 		return
 	}
 
-	jsonData, err := json.Marshal(todos)
+	tmpl, err := template.ParseFiles("./frontend/index.html")
 	if err != nil {
 		slog.Error(err.Error())
-		http.Error(w, "Unable to marshal JSON", http.StatusInternalServerError)
+		http.Error(w, "Error getting todos", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	_, _ = w.Write(jsonData)
+	err = tmpl.Execute(w, todos)
+	if err != nil {
+		slog.Error(err.Error())
+		http.Error(w, "Error getting todos", http.StatusInternalServerError)
+		return
+	}
 }
 
 func TodoPost(w http.ResponseWriter, r *http.Request) {
 	var todo Todo
-	json.NewDecoder(r.Body).Decode(&todo)
+	todo.Todo = r.FormValue("todo")
 
-	_, err := DB.Exec(`INSERT INTO "Todo" (todo, done) VALUES ($1, $2)`, todo.Todo, todo.Done)
+	err := DB.QueryRow(`INSERT INTO "Todo" (todo) VALUES ($1) RETURNING id`, todo.Todo).Scan(&todo.ID)
 	if err != nil {
 		slog.Error(err.Error())
-		http.Error(w, "Error inserting todo", http.StatusInternalServerError)
+		http.Error(w, "Error creating todo", http.StatusInternalServerError)
 		return
 	}
+	tmpl := template.Must(template.ParseFiles("./frontend/index.html"))
+	tmpl.ExecuteTemplate(w, "todo", Todo{ID: todo.ID, Todo: todo.Todo, Done: todo.Done})
 }
 
 func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 	var todo Todo
-	json.NewDecoder(r.Body).Decode(&todo)
+	id, _ := strconv.Atoi(r.PathValue("todoId"))
+	todo.Todo = r.PostFormValue("todo")
 
-	id := r.PathValue("todoId")
+	done := r.PostFormValue("done")
+	if done == "on" {
+		done = "true"
+	} else {
+		done = "false"
+	}
+	todo.Done, _ = strconv.ParseBool(done)
 
 	_, err := DB.Exec(`UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo.Todo, todo.Done, id)
 	if err != nil {
@@ -123,6 +137,8 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error updating todo", http.StatusInternalServerError)
 		return
 	}
+	tmpl := template.Must(template.ParseFiles("./frontend/index.html"))
+	tmpl.ExecuteTemplate(w, "todo", Todo{ID: id, Todo: todo.Todo, Done: todo.Done})
 }
 
 func TodoDelete(w http.ResponseWriter, r *http.Request) {
