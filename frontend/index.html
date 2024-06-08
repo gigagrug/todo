@@ -5,13 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="./assets/output.css" rel="stylesheet" />
-    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
   </head>
   <body>
     <div class="m-2">
-      <label class="flex cursor-pointer items-center" for="darkModeToggle">
-        <input id="darkModeToggle" type="checkbox" />
-        <p class="ms-1">Dark Mode</p>
+      <label class="flex cursor-pointer items-center" for="themeToggle">
+        <input id="themeToggle" class="cursor-pointer" type="checkbox" />
+        <p class="ms-1">Dark</p>
       </label>
     </div>
     <div class="mx-auto max-w-lg">
@@ -21,26 +21,25 @@
         <div class="mb-4 rounded-xl">
           <div class="flex items-center">
             <input name="todo" class="w-full rounded-l-lg border border-e-0 p-2" type="text" />
-            <button class="h-full cursor-pointer rounded-e-lg border border-e-0 border-blue-700 bg-blue-600 p-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none" type="submit">Submit</button>
+            <button class="h-full cursor-pointer rounded-e-lg border-blue-700 bg-blue-600 p-3 text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none" type="submit">Submit</button>
           </div>
         </div>
       </form>
 
       <div id="postList" hx-indicator="#indicator">
-        {{range .}} {{ block "todo" .}}
-        <div id="post{{.ID}}" class="relative mb-2">
-          <form hx-put="/updateTodo/{{.ID}}/" hx-target="#post{{.ID}}" hx-swap="outerHTML">
-            <div class="flex items-center">
-              <span class="w-full rounded-l-xl border border-e-0">
-                <input name="done" hx-put="/updateTodo/{{.ID}}/" hx-target="#post{{.ID}}" hx-swap="outerHTML" class="ms-2 cursor-pointer" type="checkbox" {{if .Done}} checked {{end}} />
-                <input name="todo" class="w-fit rounded-l-lg border-0 p-2 focus:outline-none" value="{{.Todo}}" type="text" />
-              </span>
-              <button class="h-full cursor-pointer border border-blue-700 bg-blue-600 p-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none" type="submit">Update</button>
-              <button hx-delete="/deleteTodo/{{.ID}}/" hx-swap="delete" hx-target="#post{{.ID}}" class="h-full cursor-pointer rounded-e-lg border border-red-700 bg-red-600 p-2.5 text-sm font-medium text-white hover:bg-red-800 focus:ring-4 focus:ring-red-300 focus:outline-none" type="button">Delete</button>
-            </div>
-          </form>
-        </div>
-        {{end}} {{end}}
+        {{ range . }}
+          {{ block "todo" . }}
+            <form hx-swap="outerHTML" class="mb-2 flex items-center rounded-lg border px-2">
+              <input name="done" hx-put="/updateTodo/{{ .ID }}/" hx-target="closest form" class="peer cursor-pointer" type="checkbox" {{ if .Done }}checked{{ end }} />
+              <input name="todo" hx-put="/updateTodo/{{ .ID }}/" hx-trigger="input changed delay:500ms" hx-target="closest form" class="w-full border-0 py-3 px-2 peer-checked:line-through focus:outline-none" value="{{ .Todo }}" />
+              <button hx-delete="/deleteTodo/{{ .ID }}/" hx-swap="delete" hx-target="closest form" hx-confirm="Are you sure you want to delete {{ .Todo }}" class="cursor-pointer" type="button">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6" />
+                </svg>
+              </button>
+            </form>
+          {{ end }}
+        {{ end }}
       </div>
 
       <div id="indicator" class="htmx-indicator mt-3 text-center">
@@ -55,10 +54,10 @@
     </div>
 
     <script>
-      const isDarkMode = localStorage.getItem("darkMode");
+      const themeLS = localStorage.getItem("theme");
       const htmlTag = document.documentElement;
-      const toggleSwitch = document.querySelector("#darkModeToggle");
-      if (isDarkMode === "true") {
+      const toggleSwitch = document.querySelector("#themeToggle");
+      if (themeLS === "true" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
         htmlTag.classList.add("dark");
         if (toggleSwitch) {
           toggleSwitch.checked = true;
@@ -68,10 +67,10 @@
         toggleSwitch.addEventListener("change", function () {
           if (this.checked) {
             htmlTag.classList.add("dark");
-            localStorage.setItem("darkMode", "true");
+            localStorage.setItem("theme", "true");
           } else {
             htmlTag.classList.remove("dark");
-            localStorage.setItem("darkMode", "false");
+            localStorage.setItem("theme", "false");
           }
         });
       }

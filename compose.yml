@@ -15,6 +15,11 @@ services:
         - path: .
           target: /app
           action: sync+restart
+          ignore:
+            - /frontend
+        - path: ./frontend/
+          target: /app/frontend
+          action: sync
   db:
     container_name: postgres 
     image: postgres:alpine
