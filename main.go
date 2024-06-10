@@ -8,15 +8,23 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
-	_ "github.com/lib/pq"
+	_ "modernc.org/sqlite"
 )
 
 var DB *sql.DB
 
 func main() {
-	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
+	dir, err := os.MkdirTemp("", "test-")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	fn := filepath.Join(dir, "db")
+	db, err := sql.Open("sqlite", fn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +33,7 @@ func main() {
 
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS "Todo" (
-			id SERIAL PRIMARY KEY,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			todo TEXT,
 			done BOOLEAN DEFAULT FALSE,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
