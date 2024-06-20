@@ -2,7 +2,10 @@ module todo
 
 go 1.22.4
 
-require modernc.org/sqlite v1.30.1
+require (
+	github.com/andybalholm/brotli v1.1.0
+	modernc.org/sqlite v1.30.1
+)
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect

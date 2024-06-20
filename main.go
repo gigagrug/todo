@@ -10,7 +10,10 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
+	"github.com/andybalholm/brotli"
 	_ "modernc.org/sqlite"
 )
 
@@ -60,7 +63,17 @@ func main() {
 
 func middleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.Method, r.URL.Path)
+		start := time.Now()
+		if strings.Contains(r.Header.Get("Accept-Encoding"), "br") {
+			w.Header().Set("Content-Encoding", "br")
+			br := brotli.NewWriter(w)
+			defer br.Close()
+			w = &responseWriter{
+				ResponseWriter: w,
+				Writer:         br,
+			}
+		}
+		fmt.Println(r.Method, r.URL.Path, time.Since(start))
 		h.ServeHTTP(w, r)
 	})
 }
@@ -158,4 +171,17 @@ func TodoDelete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error deleting todo", http.StatusInternalServerError)
 		return
 	}
+}
+
+type responseWriter struct {
+	http.ResponseWriter
+	Writer *brotli.Writer
+}
+
+func (rw *responseWriter) Write(data []byte) (int, error) {
+	return rw.Writer.Write(data)
+}
+
+func (rw *responseWriter) Flush() error {
+	return rw.Writer.Flush()
 }

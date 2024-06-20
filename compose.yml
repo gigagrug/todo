@@ -2,7 +2,7 @@ services:
   web:
     build:
       context: .
-      target: dev 
+      target: dev
     ports:
       - 8000:8000
     restart: always
