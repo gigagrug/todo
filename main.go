@@ -1,45 +1,36 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"html/template"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/andybalholm/brotli"
-	_ "modernc.org/sqlite"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var DB *sql.DB
+var DB *pgxpool.Pool
 
 func main() {
-	dir, err := os.MkdirTemp("", "test-")
+	db, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer os.RemoveAll(dir)
-
-	fn := filepath.Join(dir, "db")
-	db, err := sql.Open("sqlite", fn)
-	if err != nil {
-		log.Fatal(err)
-	}
+	defer db.Close()
 	DB = db
-	defer DB.Close()
-
-	_, err = db.Exec(`
+	_, err = db.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS "Todo" (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			id SERIAL PRIMARY KEY,
 			todo TEXT,
 			done BOOLEAN DEFAULT FALSE,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+			created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP);
 		`)
 	if err != nil {
 		slog.Info(err.Error())
@@ -82,11 +73,11 @@ type Todo struct {
 	ID        int
 	Todo      string
 	Done      bool
-	CreatedAt string
+	CreatedAt time.Time
 }
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	rows, err := DB.Query(`SELECT * FROM "Todo" ORDER BY id ASC`)
+	rows, err := DB.Query(context.Background(), `SELECT * FROM "Todo" ORDER BY id ASC`)
 	if err != nil {
 		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -129,7 +120,7 @@ func TodoPost(w http.ResponseWriter, r *http.Request) {
 	var todo Todo
 	todo.Todo = r.FormValue("todo")
 
-	err := DB.QueryRow(`INSERT INTO "Todo" (todo) VALUES ($1) RETURNING id`, todo.Todo).Scan(&todo.ID)
+	err := DB.QueryRow(context.Background(), `INSERT INTO "Todo" (todo) VALUES ($1) RETURNING id`, todo.Todo).Scan(&todo.ID)
 	if err != nil {
 		slog.Error(err.Error())
 		http.Error(w, "Error creating todo", http.StatusInternalServerError)
@@ -152,7 +143,7 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 	todo.Done, _ = strconv.ParseBool(done)
 
-	_, err := DB.Exec(`UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo.Todo, todo.Done, id)
+	_, err := DB.Exec(context.Background(), `UPDATE "Todo" SET todo = $1, done = $2 WHERE id = $3`, todo.Todo, todo.Done, id)
 	if err != nil {
 		slog.Error(err.Error())
 		http.Error(w, "Error updating todo", http.StatusInternalServerError)
@@ -165,7 +156,7 @@ func TodoUpdate(w http.ResponseWriter, r *http.Request) {
 func TodoDelete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("todoId")
 
-	_, err := DB.Exec(`DELETE FROM "Todo" WHERE id = $1`, id)
+	_, err := DB.Exec(context.Background(), `DELETE FROM "Todo" WHERE id = $1`, id)
 	if err != nil {
 		slog.Error(err.Error())
 		http.Error(w, "Error deleting todo", http.StatusInternalServerError)

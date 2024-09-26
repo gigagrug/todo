@@ -5,6 +5,8 @@ services:
       target: dev
     ports:
       - 8000:8000
+    environment:
+      DB_URL: "postgres://postgres:postgres@db:5432/postgres?sslmode=disable"
     restart: always
     develop:
       watch:
@@ -16,3 +18,16 @@ services:
         - path: ./frontend/
           target: /app/frontend
           action: sync
+  db:
+    container_name: postgres
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
